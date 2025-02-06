@@ -17,7 +17,6 @@ app.get("/checkUrl", async (req, res, next) => {
     uri: "http://127.0.0.1:7000/urlChecker",
     body: req.body.url,
     json: true,
-    timeout: 10000, // 10 seconds timeout for the request
   };
   const response = await request(options);
 });
