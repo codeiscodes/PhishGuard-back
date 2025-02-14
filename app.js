@@ -14,7 +14,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.post("/checkUrl", async (req, res, next) => {
   const options = {
     method: "POST",
-    uri: "http://127.0.0.1:7000/urlChecker",
+    uri: "https://phishguard-ai.onrender.com/urlChecker",
     body: req.body.url,
     json: true,
   };
