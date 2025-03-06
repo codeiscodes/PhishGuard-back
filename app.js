@@ -23,6 +23,7 @@ app.get("/ping", async (req, res, next) => {
     res.send({ message: "RETRY", code: 500 });
   }
 });
+
 app.post("/checkUrl", async (req, res, next) => {
   const options = {
     method: "POST",
@@ -38,6 +39,20 @@ app.post("/checkUrl", async (req, res, next) => {
   } else {
     console.log("Model predicted unsafe");
     res.status(200).json({ status: false });
+  }
+});
+
+app.get("/updatePredict", async (req, res, next) => {
+  const options = {
+    method: "GET",
+    uri: "https://phishguard-ai.onrender.com/updatePrediction",
+    json: true,
+  };
+  const response = await request(options);
+  if (response.status === "true") {
+    res.send("OK");
+  } else {
+    res.send("NOT");
   }
 });
 
