@@ -13,7 +13,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.get("/ping", async (req, res, next) => {
-  const url = "https://phishguard-ai.onrender.com";
+  const url = "https://phishguard-ai-lv3j.onrender.com";
   try {
     const response = await axios.get(url, { timeout: 10000 });
     console.log(`✅ Pinged ${url}, Status: ${response.status}`);
@@ -27,7 +27,7 @@ app.get("/ping", async (req, res, next) => {
 app.post("/checkUrl", async (req, res, next) => {
   const options = {
     method: "POST",
-    uri: "https://phishguard-ai.onrender.com/urlChecker",
+    uri: "https://phishguard-ai-lv3j.onrender.com/urlChecker",
     body: req.body.url,
     json: true,
   };
@@ -45,7 +45,7 @@ app.post("/checkUrl", async (req, res, next) => {
 app.get("/updatePredict", async (req, res, next) => {
   const options = {
     method: "GET",
-    uri: "https://phishguard-ai.onrender.com/updatePrediction",
+    uri: "https://phishguard-ai-lv3j.onrender.com/updatePrediction",
     json: true,
   };
   const response = await request(options);
