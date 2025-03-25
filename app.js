@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const request = require("request-promise");
 const axios = require("axios");
+const moment = require("moment");
 
 const app = express();
 const PORT = 5000;
@@ -24,6 +25,25 @@ app.get("/ping", async (req, res, next) => {
   }
 });
 
+const getDomainFromUrl = (inputUrl) => {
+  try {
+    // Ensure it starts with http/https, else add it for parsing
+    const formattedUrl = inputUrl.startsWith("http")
+      ? inputUrl
+      : `http://${inputUrl}`;
+    const parsedUrl = new URL(formattedUrl);
+    return parsedUrl.hostname; // Extracts only the domain
+  } catch (error) {
+    console.error("Invalid URL:", inputUrl);
+    return null; // Handle invalid URL cases
+  }
+};
+
+const extractASN = (asValue) => {
+  const match = asValue.match(/AS(\d+)/); // Extract number after "AS"
+  return match ? parseInt(match[1], 10) : null;
+};
+
 app.post("/checkUrl", async (req, res, next) => {
   const options = {
     method: "POST",
@@ -31,14 +51,44 @@ app.post("/checkUrl", async (req, res, next) => {
     body: req.body.url,
     json: true,
   };
+
+  const domain = getDomainFromUrl(req.body.url);
+
+  const opt = {
+    method: "GET",
+    uri: `http://ip-api.com/json/${domain}`,
+  };
+  const data = await request(opt).json();
+  const asn = extractASN(data.as);
+
+  const detectionDate = moment().format("MMMM Do YYYY, h:mm:ss a");
+  const dataToSend = {
+    sourceUrl: req.body.url,
+    location: `${data.city}, ${data.regionName}, ${data.country}`,
+    ip: data.query,
+    brand: data.org,
+    detectionDate: detectionDate,
+    asn: asn,
+  };
+
+  console.log(data);
+  console.log(dataToSend);
   console.log("URL sent for prediction");
   const response = await request(options);
   if (response.prediction === "1") {
     console.log("Model predicted safe");
-    res.status(200).json({ status: true });
+    res.status(200).json({
+      status: true,
+      redirection: response.redirections,
+      dataToSend: dataToSend,
+    });
   } else {
     console.log("Model predicted unsafe");
-    res.status(200).json({ status: false });
+    res.status(200).json({
+      status: false,
+      redirection: response.redirections,
+      dataToSend: dataToSend,
+    });
   }
 });
 
