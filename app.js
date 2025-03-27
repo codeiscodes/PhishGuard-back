@@ -4,6 +4,8 @@ const cors = require("cors");
 const request = require("request-promise");
 const axios = require("axios");
 const moment = require("moment");
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const app = express();
 const PORT = 5000;
@@ -13,7 +15,16 @@ app.use(bodyParser.json());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 app.get("/ping", async (req, res, next) => {
+  // const url = "http://127.0.0.1:7000";
   const url = "https://phishguard-ai-lv3j.onrender.com";
   try {
     const response = await axios.get(url, { timeout: 10000 });
@@ -47,6 +58,7 @@ const extractASN = (asValue) => {
 app.post("/checkUrl", async (req, res, next) => {
   const options = {
     method: "POST",
+    // uri: "http://127.0.0.1:7000/urlChecker",
     uri: "https://phishguard-ai-lv3j.onrender.com/urlChecker",
     body: req.body.url,
     json: true,
@@ -92,13 +104,24 @@ app.post("/checkUrl", async (req, res, next) => {
   }
 });
 
-app.get("/updatePredict", async (req, res, next) => {
+app.post("/updatePredict", async (req, res, next) => {
   const options = {
     method: "GET",
+    // uri: "http://127.0.0.1:7000/updatePrediction",
     uri: "https://phishguard-ai-lv3j.onrender.com/updatePrediction",
     json: true,
   };
   const response = await request(options);
+
+  const mailOptions = {
+    from: `"Phish Guard" <${process.env.EMAIL_USER}>`,
+    to: req.body.email,
+    subject: "Acknowledgement on your recent phishing link request",
+    text: `Thank you for your response. \nDescription received for the URL - ${req.body.url} : \n${req.body.description}. \nWe will look into this and get back to you. \n\nThanks,\nTeam PhishGuard.`,
+  };
+
+  await transporter.sendMail(mailOptions);
+
   if (response.status === "true") {
     res.send("OK");
   } else {
