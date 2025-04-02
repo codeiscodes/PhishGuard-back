@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const request = require("request-promise");
 const axios = require("axios");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
@@ -77,7 +77,9 @@ app.post("/checkUrl", async (req, res, next) => {
   const data = await request(opt).json();
   const asn = extractASN(data.as) || "";
 
-  const detectionDate = moment().format("MMMM Do YYYY, h:mm:ss a");
+  const detectionDate = moment()
+    .tz("Asia/Kolkata")
+    .format("MMMM Do YYYY, h:mm:ss a");
   const dataToSend = {
     sourceUrl: req.body.url,
     location: `${data.city}, ${data.regionName}, ${data.country}`,
