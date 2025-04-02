@@ -51,8 +51,12 @@ const getDomainFromUrl = (inputUrl) => {
 };
 
 const extractASN = (asValue) => {
-  const match = asValue.match(/AS(\d+)/); // Extract number after "AS"
-  return match ? parseInt(match[1], 10) : null;
+  try {
+    const match = asValue.match(/AS(\d+)/); // Extract number after "AS"
+    return match ? parseInt(match[1], 10) : null;
+  } catch (e) {
+    return;
+  }
 };
 
 app.post("/checkUrl", async (req, res, next) => {
@@ -71,7 +75,7 @@ app.post("/checkUrl", async (req, res, next) => {
     uri: `http://ip-api.com/json/${domain}`,
   };
   const data = await request(opt).json();
-  const asn = extractASN(data.as);
+  const asn = extractASN(data.as) || "";
 
   const detectionDate = moment().format("MMMM Do YYYY, h:mm:ss a");
   const dataToSend = {
